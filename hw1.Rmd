@@ -124,7 +124,7 @@ p3b
 myList <- list(
   Name = "Taylor Brown",
   Department = "Statistics",
-  Description = "He’s the best",
+  Description = "He's the best",
   Courses = c(Course1 = "STAT 3080", Course2 = "STAT 2559"),
   ActiveTeach = c(Course1 = TRUE, Course2 = FALSE),
   Enr = list(
@@ -133,9 +133,11 @@ myList <- list(
   ),
   Days = list(
     Course1 = matrix(
-      c("Monday", "Tuesday", "Tuesday",
-        "Wednesday", "Thursday", "Thursday"),
-      ncol = 2
+      c("Monday", "Wednesday",
+        "Tuesday", "Thursday",
+        "Tuesday", "Thursday"),
+      ncol = 2,
+      byrow = TRUE
     ),
     Course2 = c("Tuesday", "Thursday")
   )
