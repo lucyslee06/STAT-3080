@@ -1,0 +1,192 @@
+---
+title: "Homework 3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 1
+
+### Part a
+```{r}
+# Save parameter values
+mu <- 73.2
+sigma <- 4.9
+alpha <- 0.05
+```
+
+### Part b
+```{r}
+# Function to conduct z-test
+my.test <- function(n) {
+  # Generate sample
+  sample_data <- rnorm(n, mean = mu, sd = sigma)
+  
+  # Calculate test statistic
+  sample_mean <- mean(sample_data)
+  z_stat <- (sample_mean - mu) / (sigma / sqrt(n))
+  
+  # Calculate critical value (two-tailed test)
+  z_critical <- qnorm(1 - alpha/2)
+  
+  # Return TRUE if reject null, FALSE otherwise
+  return(abs(z_stat) > z_critical)
+}
+
+# Test the function with a few sample sizes
+my.test(10)
+my.test(23)
+my.test(50)
+```
+
+### Part c
+```{r}
+# Execute function 10,000 times with sample size 23
+num_sims <- 10000
+results <- replicate(num_sims, my.test(23))
+propReject <- mean(results)
+propReject
+```
+
+### Part d
+```{r}
+# Theoretical proportion (Type I error rate = alpha)
+trueFalsePositiveRate <- alpha
+trueFalsePositiveRate
+```
+
+### Part e
+```{r}
+# Function to calculate proportion of rejections for given sample size
+rep.z <- function(n) {
+  results <- replicate(num_sims, my.test(n))
+  return(mean(results))
+}
+
+# Execute for sample sizes 8, 23, and 52
+rep.z(8)
+rep.z(23)
+rep.z(52)
+```
+
+### Part f
+```{r}
+# Execute for sample sizes 3 through 52
+myResults <- sapply(3:52, rep.z)
+```
+
+### Part g
+```{r}
+# Analyze the trend
+# All proportions should be close to alpha (0.05) regardless of sample size
+# because this is the Type I error rate
+allClose <- TRUE
+```
+
+## Problem 2
+
+### Part a
+```{r}
+# Read in the data
+nym2021 <- read.table("nym2021.txt", header = TRUE, stringsAsFactors = FALSE)
+head(nym2021)
+```
+
+### Part b
+```{r}
+# Number of finishers
+numFinishers <- nrow(nym2021)
+numFinishers
+```
+
+### Part c
+```{r}
+# US states and territories
+us_states <- c("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", 
+               "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", 
+               "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", 
+               "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", 
+               "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+               "DC", "PR", "VI", "GU", "AS", "MP")
+
+numUSAFinishers <- sum(nym2021$HomeStateOrCountry %in% us_states)
+numUSAFinishers
+```
+
+### Part d
+```{r}
+# Create a copy of the data to modify country codes
+country_data <- nym2021$HomeStateOrCountry
+
+# Replace US states/territories with "USA"
+country_data[country_data %in% us_states] <- "USA"
+
+# Create table
+numEachCountry <- table(country_data)
+numEachCountry
+```
+
+### Part e
+```{r}
+# Number of unique countries
+numUniqueCountries <- length(numEachCountry)
+numUniqueCountries
+```
+
+### Part f
+```{r}
+# Youngest and oldest finishers
+oldestAndYoungest <- c(min(nym2021$Age), max(nym2021$Age))
+oldestAndYoungest
+```
+
+### Part g
+```{r}
+# Division of fastest and slowest finishers
+# Fastest has minimum time, slowest has maximum time
+fastest_idx <- which.min(nym2021$Time)
+slowest_idx <- which.max(nym2021$Time)
+
+divFastest <- nym2021$DIV[fastest_idx]
+divSlowest <- nym2021$DIV[slowest_idx]
+
+divFastest
+divSlowest
+```
+
+### Part h
+```{r}
+# Number of finishers outside Top 100 of their division
+numOutside <- sum(nym2021$DivPlace > 100)
+numOutside
+```
+
+### Part i
+```{r}
+# Divisions of Top 5 finishers in their division
+top5_divs <- nym2021$DIV[nym2021$DivPlace <= 5]
+
+# Get unique divisions and sort (female before male, young before old)
+divTopFive <- unique(top5_divs)
+divTopFive <- sort(divTopFive)
+divTopFive
+```
+
+### Part j
+```{r}
+# Subset top 50 overall finishers
+top50 <- nym2021[nym2021$Place <= 50, ]
+head(top50)
+```
+
+### Part k
+```{r}
+# Average age by Boston Qualifier status
+age_by_qualifier <- tapply(nym2021$Age, nym2021$BostonQualifier, mean)
+
+# Convert to vector in order: did qualify (Y), did not qualify (N)
+aveAges <- as.vector(age_by_qualifier[c("Y", "N")])
+aveAges
+```
