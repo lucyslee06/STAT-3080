@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "hw2"
 output: html_document
@@ -177,4 +178,185 @@ manyMoons <- planet_df[
   planet_df$moons == "TwoPlus",
   c("name", "rings")
 ]
+=======
+---
+title: "hw2"
+output: html_document
+date: "2026-02-08"
+---
+1a
+
+```{r}
+commutes <- matrix(
+  c(29, 38, 31, 34, 36,
+    27, 32, 44, 37, 38),
+  ncol = 2
+)
+```
+
+1b
+```{r}
+rownames(commutes) <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+colnames(commutes) <- c("Week1", "Week2")
+```
+
+1c
+
+```{r}
+secondIsFaster <- commutes[,2] < commutes[,1]
+
+```
+
+1d
+```{r}
+aveTimes <- rowMeans(commutes)
+
+```
+1e
+
+```{r}
+myDiff <- commutes - 35
+
+```
+
+1f
+```{r}
+aveDifferences <- colMeans(myDiff)
+
+```
+
+1g
+```{r}
+maxDelays <- apply(myDiff, 2, max)
+
+```
+1h
+```{r}
+daysOfTheWeek <- rownames(commutes)[commutes[,2] <= 30]
+
+```
+1i
+```{r}
+partI <- colSums(commutes <= 35)
+
+```
+1j
+```{r}
+fastDays <- rownames(commutes)[commutes[,1] == min(commutes[,1])]
+
+```
+1k
+```{r}
+similarSub <- myDiff[
+  (myDiff[,1] <= 0 & myDiff[,2] <= 0) |
+  (myDiff[,1] > 0 & myDiff[,2] > 0),
+]
+```
+
+
+## Problem 2
+
+```{r}
+library(car)
+data(Davis)
+```
+
+2a
+```{r}
+weight.metric <- Davis[, c("weight", "repwt")]
+head(weight.metric)
+```
+2b
+```{r}
+weight.imp <- weight.metric * 2.2
+head(weight.imp)
+```
+2c
+```{r}
+height.metric <- Davis[, c("height", "repht")]
+head(height.metric)
+```
+2d
+```{r}
+height.imp <- round(height.metric / 2.54, 1)
+head(height.imp)
+
+
+```
+2e
+```{r}
+Davis.imp <- data.frame(
+  sex = Davis$sex,
+  rec.weight = weight.imp$weight,
+  rep.weight = weight.imp$repwt,
+  rec.height = height.imp$height,
+  rep.height = height.imp$repht
+)
+head(Davis.imp)
+
+```
+2f
+```{r}
+numMissing <- colSums(is.na(Davis.imp))
+
+```
+2g
+```{r}
+numBadThings <- sum(apply(is.na(Davis.imp), 1, any))
+
+```
+2h
+```{r}
+mySubset <- Davis.imp$sex[apply(is.na(Davis.imp), 1, any)]
+
+```
+
+
+## Problem 3
+
+3a
+```{r}
+planet_df <- data.frame(
+  name = c("Mercury","Venus","Earth","Mars",
+           "Jupiter","Saturn","Uranus","Neptune"),
+  distance = c(0.39,0.72,1,1.52,5.2,9.54,19.18,30.06),
+  type = c(rep("Terrestrial",4), rep("Gas",4)),
+  diameter = c(0.382,0.949,1,0.532,11.209,9.449,4.007,3.883),
+  rotation = c(58.64,-243.02,1,1.03,0.41,0.43,-0.72,0.67),
+  rings = c(rep("No",4), rep("Yes",4)),
+  moons = c("None","None","One","TwoPlus",
+            "TwoPlus","TwoPlus","TwoPlus","TwoPlus")
+)
+
+print(planet_df)
+```
+
+3b
+```{r}
+smolPlanets <- planet_df[planet_df$diameter < 2, ]
+
+```
+
+3c
+```{r}
+leDistances <- planet_df$distance[planet_df$rotation < 0]
+
+```
+
+3d
+```{r}
+bigPlanets <- planet_df[
+  planet_df$diameter > 1,
+  c("name", "distance", "type")
+]
+
+```
+
+3e
+```{r}
+manyMoons <- planet_df[
+  planet_df$moons == "TwoPlus",
+  c("name", "rings")
+]
+>>>>>>> df8c75cc3ff66a632f1af59ba7ece1b01d44aa94
 ```
