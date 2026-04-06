@@ -1,0 +1,202 @@
+---
+title: "Homework 7"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 1
+
+```{r problem1}
+library(ggplot2)
+
+myPlot <- ggplot(data.frame(x = c(0, 15)), aes(x = x)) +
+  stat_function(fun = dchisq, args = list(df = 2), color = "steelblue", linewidth = 1) +
+  labs(
+    title = "Chi-Squared Distribution (df = 2)",
+    x = "x",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+myPlot
+```
+
+The chi-squared distribution with 2 degrees of freedom is strongly right-skewed (positively skewed). It starts at its highest density near x = 0, then decreases monotonically and asymptotically approaches zero as x increases. It has no left tail and a long right tail.
+
+---
+
+## Problem 2
+
+```{r problem2}
+set.seed(42)
+
+mu0 <- 2
+sigma <- 2  # known population standard deviation
+n_reps <- 10000
+sample_sizes <- c(8, 23, 52)
+alpha <- 0.05
+
+# a: Two-sided z-test
+do.two.sided.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  z <- (mean(samp) - mu0) / (sigma / sqrt(n))
+  p_val <- 2 * pnorm(-abs(z))
+  return(p_val < alpha)
+}
+
+# b: Left-sided z-test
+do.left.sided.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  z <- (mean(samp) - mu0) / (sigma / sqrt(n))
+  p_val <- pnorm(z)
+  return(p_val < alpha)
+}
+
+# c: Right-sided z-test
+do.right.sided.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  z <- (mean(samp) - mu0) / (sigma / sqrt(n))
+  p_val <- 1 - pnorm(z)
+  return(p_val < alpha)
+}
+
+z.two  <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.two.sided.test(n))))
+z.left <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.left.sided.test(n))))
+z.right <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.right.sided.test(n))))
+
+z.two
+z.left
+z.right
+```
+
+---
+
+## Problem 3
+
+```{r problem3}
+prob3Mat <- matrix(c(z.two, z.left, z.right),
+                   nrow = length(z.two),
+                   ncol = 3,
+                   byrow = FALSE)
+colnames(prob3Mat) <- c("two", "left", "right")
+rownames(prob3Mat) <- paste("n =", sample_sizes)
+
+prob3Mat
+```
+
+**Conclusions:** When using the correct z-test (known population standard deviation), the empirical Type I error rates are close to the nominal α = 0.05 across all sample sizes and test directions. For the two-sided test, the total error (~0.05) is split roughly equally between both tails. The left-sided test rejects less often than 0.05 and the right-sided test more often (since chi-squared is right-skewed, samples tend to produce larger means more often). As sample size increases, the CLT kicks in and all rates converge closer to their nominal levels due to the distribution of the sample mean becoming more symmetric.
+
+---
+
+## Problem 4
+
+```{r problem4}
+set.seed(42)
+
+# a: Two-sided t-test
+do.two.sided.t.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  result <- t.test(samp, mu = mu0, alternative = "two.sided")
+  return(result$p.value < alpha)
+}
+
+# b: Left-sided t-test
+do.left.sided.t.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  result <- t.test(samp, mu = mu0, alternative = "less")
+  return(result$p.value < alpha)
+}
+
+# c: Right-sided t-test
+do.right.sided.t.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  result <- t.test(samp, mu = mu0, alternative = "greater")
+  return(result$p.value < alpha)
+}
+
+t.two   <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.two.sided.t.test(n))))
+t.left  <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.left.sided.t.test(n))))
+t.right <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.right.sided.t.test(n))))
+
+t.two
+t.left
+t.right
+```
+
+---
+
+## Problem 5
+
+```{r problem5}
+prob5Mat <- matrix(c(t.two, t.left, t.right),
+                   nrow = length(t.two),
+                   ncol = 3,
+                   byrow = FALSE)
+colnames(prob5Mat) <- c("two", "left", "right")
+rownames(prob5Mat) <- paste("n =", sample_sizes)
+
+prob5Mat
+```
+
+**Conclusions:** The t-test uses the sample standard deviation, which introduces additional variability (especially at small n), leading to heavier tails in the t-distribution — this is meant to compensate for not knowing σ. Since the data are non-normal (chi-squared), the t-test's Type I error rates are somewhat inflated at small sample sizes, particularly for the right-sided test. As n increases toward 52, the empirical error rates converge closer to 0.05 as the CLT makes the sample mean approximately normal and the sample SD stabilizes near the true σ.
+
+---
+
+## Problem 6
+
+```{r problem6}
+set.seed(42)
+
+# a: Two-sided "bad" z-test (uses sample SD instead of known sigma)
+do.two.sided.bad.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  z <- (mean(samp) - mu0) / (sd(samp) / sqrt(n))
+  p_val <- 2 * pnorm(-abs(z))
+  return(p_val < alpha)
+}
+
+# b: Left-sided "bad" z-test
+do.left.sided.bad.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  z <- (mean(samp) - mu0) / (sd(samp) / sqrt(n))
+  p_val <- pnorm(z)
+  return(p_val < alpha)
+}
+
+# c: Right-sided "bad" z-test
+do.right.sided.bad.test <- function(n) {
+  samp <- rchisq(n, df = 2)
+  z <- (mean(samp) - mu0) / (sd(samp) / sqrt(n))
+  p_val <- 1 - pnorm(z)
+  return(p_val < alpha)
+}
+
+zt.two   <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.two.sided.bad.test(n))))
+zt.left  <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.left.sided.bad.test(n))))
+zt.right <- sapply(sample_sizes, function(n) mean(replicate(n_reps, do.right.sided.bad.test(n))))
+
+zt.two
+zt.left
+zt.right
+```
+
+---
+
+## Problem 7
+
+```{r problem7}
+prob7Mat <- matrix(c(zt.two, zt.left, zt.right),
+                   nrow = length(zt.two),
+                   ncol = 3,
+                   byrow = FALSE)
+colnames(prob7Mat) <- c("two", "left", "right")
+rownames(prob7Mat) <- paste("n =", sample_sizes)
+
+prob7Mat
+```
+
+**Conclusions:** The "bad" z-test plugs the sample SD into the z-test formula but still uses standard normal critical values (rather than t critical values). At small sample sizes (n = 8), this leads to noticeably inflated or deflated Type I error rates compared to the nominal α = 0.05 — the standard normal critical values are too narrow relative to the actual sampling distribution. As n grows, the sample SD becomes a more reliable estimate of σ and the normal approximation improves, so the error rates converge toward 0.05. Compared to the correct t-test (Problem 4), the bad z-test behaves differently at small n because it ignores the extra uncertainty from estimating σ.
+```
